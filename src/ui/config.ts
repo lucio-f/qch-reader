@@ -1,5 +1,3 @@
-import { homedir } from 'node:os';
-import * as path from 'node:path';
 import * as vscode from 'vscode';
 import type { Appearance } from '../shared/protocol';
 
@@ -14,7 +12,6 @@ export interface UserFilterSetting {
 }
 
 export interface ReaderConfig {
-  readonly folders: readonly string[];
   readonly recursive: boolean;
   readonly includeWorkspaceFiles: boolean;
   readonly appearance: Appearance;
@@ -61,7 +58,6 @@ function userFilters(value: unknown): UserFilterSetting[] {
 export function readConfig(): ReaderConfig {
   const config = vscode.workspace.getConfiguration(SECTION);
   return {
-    folders: stringArray(config.get('folders')),
     recursive: config.get('recursive', true),
     includeWorkspaceFiles: config.get('includeWorkspaceFiles', true),
     appearance: config.get('appearance') === 'original' ? 'original' : 'themed',
@@ -74,32 +70,4 @@ export function readConfig(): ReaderConfig {
     hoverLanguages: stringArray(config.get('hover.languages', DEFAULT_HOVER_LANGUAGES)),
     documentLinksEnabled: config.get('documentLinks.enabled', true),
   };
-}
-
-/**
- * Expands `~`, `${userHome}`, `${env:NAME}` and `${workspaceFolder}` (once per workspace
- * folder) in a configured path. Relative paths are resolved against each workspace folder.
- */
-export function expandConfiguredPath(value: string): string[] {
-  const workspaceFolders = (vscode.workspace.workspaceFolders ?? [])
-    .filter((folder) => folder.uri.scheme === 'file')
-    .map((folder) => folder.uri.fsPath);
-  let expanded = value
-    .trim()
-    .replace(/^~(?=$|[\\/])/, homedir())
-    .replaceAll('${userHome}', homedir())
-    .replace(/\$\{env:([^}]+)\}/g, (_match, name: string) => process.env[name] ?? '');
-  if (expanded === '') {
-    return [];
-  }
-  if (expanded.includes('${workspaceFolder}')) {
-    return workspaceFolders.map((folder) =>
-      path.normalize(expanded.replaceAll('${workspaceFolder}', folder)),
-    );
-  }
-  if (!path.isAbsolute(expanded)) {
-    return workspaceFolders.map((folder) => path.resolve(folder, expanded));
-  }
-  expanded = path.normalize(expanded);
-  return [expanded];
 }

@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { formatQtHelpUrl, parseQtHelpUrl } from './core/library/qthelpUrl';
 import type { QchFile } from './core/qch/qchFile';
-import { SECTION } from './ui/config';
 import { type ContentsNode, ContentsTreeProvider } from './ui/contentsTree';
 import { DocPanelManager } from './ui/docPanelManager';
 import { INFO_URL_PREFIX, type OpenOptions } from './ui/docViewer';
@@ -9,6 +8,7 @@ import { EditorIntegration } from './ui/editorIntegration';
 import { FilterService } from './ui/filterService';
 import { IndexService } from './ui/indexService';
 import { LibraryService } from './ui/libraryService';
+import { addDocumentationLocations, removeDocumentationLocations } from './ui/locations';
 import { PageService } from './ui/pageService';
 import { QchEditorProvider } from './ui/qchEditorProvider';
 import { SearchViewProvider } from './ui/searchView';
@@ -106,70 +106,8 @@ export function activate(context: vscode.ExtensionContext): void {
     context.subscriptions.push(vscode.commands.registerCommand(command, handler));
   };
 
-  register('qchReader.addFolder', async () => {
-    const picked = await vscode.window.showOpenDialog({
-      canSelectFolders: true,
-      canSelectFiles: true,
-      canSelectMany: true,
-      filters: { 'Qt Compressed Help': ['qch'] },
-      openLabel: 'Add Documentation',
-      title: 'Add Folders or .qch Files',
-    });
-    if (!picked || picked.length === 0) {
-      return;
-    }
-    const config = vscode.workspace.getConfiguration(SECTION);
-    const current = config.inspect<string[]>('folders')?.globalValue ?? [];
-    const additions = picked.map((uri) => uri.fsPath).filter((fsPath) => !current.includes(fsPath));
-    await config.update('folders', [...current, ...additions], vscode.ConfigurationTarget.Global);
-  });
-
-  register('qchReader.removeFolder', async () => {
-    const config = vscode.workspace.getConfiguration(SECTION);
-    const inspected = config.inspect<string[]>('folders');
-    const items = [
-      ...(inspected?.globalValue ?? []).map((folder) => ({
-        label: folder,
-        description: 'User settings',
-        target: vscode.ConfigurationTarget.Global,
-      })),
-      ...(inspected?.workspaceValue ?? []).map((folder) => ({
-        label: folder,
-        description: 'Workspace settings',
-        target: vscode.ConfigurationTarget.Workspace,
-      })),
-    ];
-    if (items.length === 0) {
-      void vscode.window.showInformationMessage('No documentation folders are configured.');
-      return;
-    }
-    const picked = await vscode.window.showQuickPick(items, {
-      canPickMany: true,
-      placeHolder: 'Select folders to remove',
-    });
-    if (!picked) {
-      return;
-    }
-    for (const target of [
-      vscode.ConfigurationTarget.Global,
-      vscode.ConfigurationTarget.Workspace,
-    ]) {
-      const removed = new Set(
-        picked.filter((item) => item.target === target).map((item) => item.label),
-      );
-      if (removed.size > 0) {
-        const values =
-          target === vscode.ConfigurationTarget.Global
-            ? inspected?.globalValue
-            : inspected?.workspaceValue;
-        await config.update(
-          'folders',
-          (values ?? []).filter((folder) => !removed.has(folder)),
-          target,
-        );
-      }
-    }
-  });
+  register('qchReader.addFolder', addDocumentationLocations);
+  register('qchReader.removeFolder', removeDocumentationLocations);
 
   register('qchReader.refresh', async () => library.reload());
   register('qchReader.selectFilter', async () => filters.pick());

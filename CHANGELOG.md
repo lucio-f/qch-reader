@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+
+- Documentation locations can be committed with a project: **Add Documentation Folder…** lets you choose user, workspace or folder settings and stores paths relative to the workspace.
+- `qchReader.folders` values from user, workspace and folder settings are combined instead of overriding each other.
+- Relative paths resolve against the settings file that contains them; `${workspaceFolder:name}` and per-folder settings in multi-root workspaces are supported.
+- Workspace locations wait for workspace trust, with a notice explaining why.
+
 ## 0.1.0
 
 Initial release.

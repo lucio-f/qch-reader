@@ -38,7 +38,7 @@
     },
     "untrustedWorkspaces": {
       "supported": "limited",
-      "description": "Documentation folders configured in workspace settings are ignored in untrusted workspaces.",
+      "description": "Documentation locations from workspace settings are used only once the workspace is trusted.",
       "restrictedConfigurations": [
         "qchReader.folders"
       ]
@@ -435,9 +435,18 @@
             "type": "string"
           },
           "default": [],
-          "markdownDescription": "Folders (or individual `.qch` files) containing Qt Compressed Help documentation. Supports `~`, `${userHome}` and `${workspaceFolder}`.",
-          "scope": "machine-overridable",
-          "order": 1
+          "markdownDescription": "Folders (or individual `.qch` files) containing Qt Compressed Help documentation.\n\nPut this setting in the **workspace** settings (`.vscode/settings.json` or the `.code-workspace` file) to commit the locations with your project. Locations from user, workspace and folder settings are **combined**.\n\nRelative paths are resolved against the folder of the settings file that contains them. Supports `~`, `${userHome}`, `${env:NAME}`, `${workspaceFolder}` and `${workspaceFolder:name}`. Workspace values are ignored until the workspace is trusted.",
+          "scope": "resource",
+          "order": 1,
+          "examples": [
+            [
+              "docs/qch"
+            ],
+            [
+              "${workspaceFolder}/third_party/qt/docs",
+              "~/Qt/Docs/Qt-6.8.0"
+            ]
+          ]
         },
         "qchReader.recursive": {
           "type": "boolean",

@@ -4,7 +4,8 @@ import { QchLibrary } from '../core/library/library';
 import { QchFile } from '../core/qch/qchFile';
 import { KeywordIndex } from '../core/search/keywordSearch';
 import { FileByteSource, MemoryByteSource } from '../core/sqlite/pageSource';
-import { SECTION, expandConfiguredPath, readConfig } from './config';
+import { SECTION, readConfig } from './config';
+import { type ConfiguredLocation, collectLocations, scopeLabel } from './locations';
 
 interface LoadedFile {
   readonly uri: vscode.Uri;
@@ -53,6 +54,7 @@ export class LibraryService implements vscode.Disposable {
   private reloadTimer: NodeJS.Timeout | undefined;
   private running: Promise<void> | undefined;
   private reloadRequests = 0;
+  private untrustedReported = false;
   private readonly readyPromise: Promise<void>;
   private loadingState = false;
 
@@ -167,8 +169,10 @@ export class LibraryService implements vscode.Disposable {
     this.setLoading(true);
     try {
       const config = readConfig();
+      const { locations, ignoredUntrusted } = collectLocations();
+      this.reportUntrusted(ignoredUntrusted);
       const { uris, directories } = await this.discover(
-        config.folders,
+        locations,
         config.recursive,
         config.includeWorkspaceFiles,
       );
@@ -247,8 +251,32 @@ export class LibraryService implements vscode.Disposable {
     }
   }
 
+  /** Tells the user (once per session) that workspace locations wait for workspace trust. */
+  private reportUntrusted(count: number): void {
+    if (count === 0) {
+      return;
+    }
+    this.log.warn(
+      `${count} documentation location(s) from workspace settings ignored: workspace not trusted`,
+    );
+    if (this.untrustedReported) {
+      return;
+    }
+    this.untrustedReported = true;
+    void vscode.window
+      .showInformationMessage(
+        `${count} documentation location${count === 1 ? '' : 's'} from the workspace settings will be used once you trust this workspace.`,
+        'Manage Workspace Trust',
+      )
+      .then((choice) => {
+        if (choice) {
+          void vscode.commands.executeCommand('workbench.trust.manage');
+        }
+      });
+  }
+
   private async discover(
-    folders: readonly string[],
+    locations: readonly ConfiguredLocation[],
     recursive: boolean,
     includeWorkspace: boolean,
   ): Promise<{ uris: vscode.Uri[]; directories: vscode.Uri[] }> {
@@ -285,8 +313,13 @@ export class LibraryService implements vscode.Disposable {
       );
     };
 
-    for (const configured of folders) {
-      for (const fsPath of expandConfiguredPath(configured)) {
+    for (const location of locations) {
+      if (location.paths.length === 0) {
+        this.log.warn(
+          `Documentation location "${location.value}" (${scopeLabel(location)}) expands to no path`,
+        );
+      }
+      for (const fsPath of location.paths) {
         const uri = vscode.Uri.file(fsPath);
         try {
           const stat = await vscode.workspace.fs.stat(uri);
@@ -297,7 +330,9 @@ export class LibraryService implements vscode.Disposable {
             add(uri);
           }
         } catch {
-          this.log.warn(`Configured documentation path does not exist: ${fsPath}`);
+          this.log.warn(
+            `Documentation location "${location.value}" (${scopeLabel(location)}) not found: ${fsPath}`,
+          );
         }
       }
     }

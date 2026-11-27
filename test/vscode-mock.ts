@@ -205,7 +205,18 @@ export class RelativePattern {
 // ---------------------------------------------------------------------------------------------
 
 export const state = {
+  /** User (global) settings, keyed `section.key`. */
   configuration: new Map<string, unknown>(),
+  /** Workspace settings (`.vscode/settings.json` or the `.code-workspace` file). */
+  workspaceConfiguration: new Map<string, unknown>(),
+  /** Folder settings by folder path (multi-root workspaces). */
+  folderConfiguration: new Map<string, Map<string, unknown>>(),
+  workspaceFolders: undefined as { uri: Uri; name: string; index: number }[] | undefined,
+  workspaceFile: undefined as Uri | undefined,
+  isTrusted: true,
+  /** Answers showQuickPick with one of the offered items (default: cancel). */
+  quickPickAnswer: undefined as ((items: readonly { label: string }[]) => unknown) | undefined,
+  openDialogAnswer: undefined as Uri[] | undefined,
   contexts: new Map<string, unknown>(),
   commands: new Map<string, (...args: unknown[]) => unknown>(),
   treeProviders: new Map<string, unknown>(),
@@ -322,28 +333,67 @@ export const window = {
   setStatusBarMessage: () => new Disposable(),
   withProgress: async <T>(_options: unknown, task: (progress: { report(): void }) => Promise<T>) =>
     task({ report: () => undefined }),
-  showQuickPick: async () => Promise.resolve(undefined),
+  showQuickPick: async (items: readonly { label: string }[]) =>
+    Promise.resolve(state.quickPickAnswer?.(items)),
   showInputBox: async () => Promise.resolve(undefined),
-  showOpenDialog: async () => Promise.resolve(undefined),
+  showOpenDialog: async () => Promise.resolve(state.openDialogAnswer),
   get activeTextEditor(): unknown {
     return state.activeTextEditor;
   },
 };
 
 export const workspace = {
-  workspaceFolders: undefined,
-  getConfiguration: (section: string) => ({
-    get: <T>(key: string, fallback?: T): T | undefined =>
-      (state.configuration.get(`${section}.${key}`) as T | undefined) ?? fallback,
-    inspect: (key: string) => ({ globalValue: state.configuration.get(`${section}.${key}`) }),
-    update: async (key: string, value: unknown) => {
-      state.configuration.set(`${section}.${key}`, value);
-      configurationEmitter.fire({
-        affectsConfiguration: (name) => `${section}.${key}`.startsWith(name),
-      });
-      return Promise.resolve();
-    },
-  }),
+  get workspaceFolders(): { uri: Uri; name: string; index: number }[] | undefined {
+    return state.workspaceFolders;
+  },
+  get workspaceFile(): Uri | undefined {
+    return state.workspaceFile;
+  },
+  get isTrusted(): boolean {
+    return state.isTrusted;
+  },
+  getConfiguration: (section: string, scope?: Uri | { uri: Uri }) => {
+    const folderPath = scope ? ('uri' in scope ? scope.uri : scope).fsPath : undefined;
+    const folderValues = (): Map<string, unknown> | undefined =>
+      folderPath === undefined ? undefined : state.folderConfiguration.get(folderPath);
+    const inspect = (key: string) => ({
+      globalValue: state.configuration.get(`${section}.${key}`),
+      workspaceValue: state.workspaceConfiguration.get(`${section}.${key}`),
+      workspaceFolderValue: folderValues()?.get(`${section}.${key}`),
+    });
+    return {
+      get: <T>(key: string, fallback?: T): T | undefined => {
+        const values = inspect(key);
+        return (
+          ((values.workspaceFolderValue ?? values.workspaceValue ?? values.globalValue) as
+            T | undefined) ?? fallback
+        );
+      },
+      inspect,
+      update: async (
+        key: string,
+        value: unknown,
+        target: ConfigurationTarget = ConfigurationTarget.Global,
+      ) => {
+        const name = `${section}.${key}`;
+        if (target === ConfigurationTarget.WorkspaceFolder) {
+          if (folderPath === undefined) {
+            throw new Error('Folder settings need a resource scope');
+          }
+          const values = state.folderConfiguration.get(folderPath) ?? new Map<string, unknown>();
+          values.set(name, value);
+          state.folderConfiguration.set(folderPath, values);
+        } else {
+          (target === ConfigurationTarget.Workspace
+            ? state.workspaceConfiguration
+            : state.configuration
+          ).set(name, value);
+        }
+        configurationEmitter.fire({ affectsConfiguration: (changed) => name.startsWith(changed) });
+        return Promise.resolve();
+      },
+    };
+  },
   onDidChangeConfiguration: configurationEmitter.event,
   onDidChangeWorkspaceFolders: noopEvent,
   onDidGrantWorkspaceTrust: noopEvent,

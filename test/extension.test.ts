@@ -257,4 +257,104 @@ describe('extension with a mocked VS Code', () => {
         lastOf(posted, 'page')?.url.endsWith('widget.html#paint') === true,
     );
   });
+
+  describe('documentation locations in settings', () => {
+    const tree = (): TreeProvider =>
+      mock.state.treeProviders.get('qchReader.contents') as TreeProvider;
+    const reload = async (): Promise<string[]> => {
+      await mock.commands.executeCommand('qchReader.refresh');
+      return tree()
+        .getChildren()
+        .map((node) => tree().getTreeItem(node).label);
+    };
+    const singleFolder = (): void => {
+      mock.state.workspaceFile = undefined;
+      mock.state.workspaceFolders = [{ uri: mock.Uri.file(root), name: 'qch-reader', index: 0 }];
+    };
+
+    afterAll(() => {
+      mock.state.workspaceFolders = undefined;
+      mock.state.workspaceFile = undefined;
+      mock.state.isTrusted = true;
+    });
+
+    it('loads paths committed in workspace settings, relative to the workspace', async () => {
+      singleFolder();
+      mock.state.configuration.set('qchReader.folders', []);
+      mock.state.workspaceConfiguration.set('qchReader.folders', ['test/fixtures']);
+      expect(await reload()).toEqual(['Alpha Manual', 'Beta']);
+    });
+
+    it('ignores workspace settings until the workspace is trusted', async () => {
+      mock.state.isTrusted = false;
+      mock.state.messages.length = 0;
+      expect(await reload()).toEqual([]);
+      expect(mock.state.messages.join('\n')).toContain('once you trust this workspace');
+      mock.state.isTrusted = true;
+      expect(await reload()).toEqual(['Alpha Manual', 'Beta']);
+    });
+
+    it('combines user and workspace locations', async () => {
+      mock.state.configuration.set('qchReader.folders', [path.join(FIXTURES, 'beta.qch')]);
+      mock.state.workspaceConfiguration.set('qchReader.folders', ['test/fixtures/alpha.qch']);
+      expect(await reload()).toEqual(['Alpha Manual', 'Beta']);
+      mock.state.configuration.set('qchReader.folders', []);
+      expect(await reload()).toEqual(['Alpha Manual']);
+    });
+
+    it('reads folder settings and named folders in multi-root workspaces', async () => {
+      mock.state.workspaceFile = mock.Uri.file(path.join(root, 'project.code-workspace'));
+      mock.state.workspaceFolders = [
+        { uri: mock.Uri.file(root), name: 'repo', index: 0 },
+        { uri: mock.Uri.file(FIXTURES), name: 'fixtures', index: 1 },
+      ];
+      mock.state.workspaceConfiguration.set('qchReader.folders', [
+        '${workspaceFolder:fixtures}/alpha.qch',
+      ]);
+      mock.state.folderConfiguration.set(
+        mock.Uri.file(FIXTURES).fsPath,
+        new Map([['qchReader.folders', ['beta.qch']]]),
+      );
+      expect(await reload()).toEqual(['Alpha Manual', 'Beta']);
+      mock.state.folderConfiguration.clear();
+      expect(await reload()).toEqual(['Alpha Manual']);
+    });
+
+    it('adds folders to the chosen settings file as portable paths', async () => {
+      singleFolder();
+      mock.state.workspaceConfiguration.delete('qchReader.folders');
+      mock.state.openDialogAnswer = [mock.Uri.file(FIXTURES)];
+      mock.state.quickPickAnswer = (items) =>
+        items.find((item) => item.label.includes('Workspace Settings'));
+      await mock.commands.executeCommand('qchReader.addFolder');
+      expect(mock.state.workspaceConfiguration.get('qchReader.folders')).toEqual(['test/fixtures']);
+      expect(await reload()).toEqual(['Alpha Manual', 'Beta']);
+
+      // In a multi-root workspace the folder containing the selection is offered first.
+      mock.state.workspaceFile = mock.Uri.file(path.join(root, 'project.code-workspace'));
+      mock.state.workspaceFolders = [
+        { uri: mock.Uri.file(root), name: 'repo', index: 0 },
+        { uri: mock.Uri.file(FIXTURES), name: 'fixtures', index: 1 },
+      ];
+      mock.state.openDialogAnswer = [mock.Uri.file(path.join(FIXTURES, 'beta.qch'))];
+      mock.state.quickPickAnswer = (items) => items[0];
+      await mock.commands.executeCommand('qchReader.addFolder');
+      expect(
+        mock.state.folderConfiguration
+          .get(mock.Uri.file(FIXTURES).fsPath)
+          ?.get('qchReader.folders'),
+      ).toEqual(['beta.qch']);
+    });
+
+    it('removes locations from any settings file', async () => {
+      singleFolder();
+      mock.state.quickPickAnswer = (items) =>
+        items.filter((item) => item.label === 'test/fixtures');
+      await mock.commands.executeCommand('qchReader.removeFolder');
+      expect(mock.state.workspaceConfiguration.get('qchReader.folders')).toEqual([]);
+      expect(await reload()).toEqual([]);
+      mock.state.quickPickAnswer = undefined;
+      mock.state.openDialogAnswer = undefined;
+    });
+  });
 });

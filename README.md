@@ -33,11 +33,32 @@ Browse, search and filter **Qt Compressed Help** (`.qch`) documentation without 
 
 ## Getting started
 
-1. Run **QCH: Add Documentation Folder…** (or click the button in the QCH Documentation view) and pick the folder containing your `.qch` files — for a Qt installation that is typically `~/Qt/Docs/Qt-6.x.y` or `/usr/share/qt6/doc`.
+1. Run **QCH: Add Documentation Folder…** (or click the button in the QCH Documentation view), pick the folder containing your `.qch` files — for a Qt installation that is typically `~/Qt/Docs/Qt-6.x.y` or `/usr/share/qt6/doc` — and choose whether to save it in your user settings or in the workspace settings you commit.
 2. Open the **QCH Documentation** view in the activity bar. Browse the contents or use the **Search** view (`Index` tab for keywords, `Full Text` for everything).
 3. Press `Shift+F1` on a symbol in C++/QML/Python code to jump to its documentation, or `Ctrl+Alt+F1` (`Cmd+Alt+F1`) to look up any keyword.
 
 The full-text index is built in background worker threads the first time a document is loaded and cached afterwards, so later sessions start instantly.
+
+## Sharing documentation locations with your team
+
+Put `qchReader.folders` in the **workspace settings** and commit them with your project, so everyone who opens it gets the same documentation:
+
+```jsonc
+// .vscode/settings.json
+{
+  "qchReader.folders": [
+    "docs/qch", // relative to the workspace folder
+    "${workspaceFolder}/third_party/qt/doc",
+    "~/Qt/Docs/Qt-6.8.0", // each developer's own Qt installation
+    "${env:QT_DOCS}",
+  ],
+}
+```
+
+- **Add Documentation Folder…** asks where to save the location. Choose _Workspace Settings_ (or a folder's settings in a multi-root workspace) and the path is written relative to the workspace, so it works on every machine.
+- Locations from user, workspace and folder settings are **combined**: your personal folders stay available in every project, and the project adds its own.
+- Relative paths are resolved against the folder of the settings file they are in: the workspace folder for `.vscode/settings.json`, the folder of the `.code-workspace` file for workspace files. In multi-root workspaces, `${workspaceFolder:name}` points at a specific folder.
+- Like other settings that read files, workspace locations are only used once the workspace is [trusted](https://code.visualstudio.com/docs/editor/workspace-trust).
 
 ## Commands
 
@@ -59,19 +80,19 @@ Links of the form `vscode://lucio-f.qch-reader/open?url=qthelp://…`, `…/keyw
 
 ## Settings
 
-| Setting                                       | Default                        | Description                                                                 |
-| --------------------------------------------- | ------------------------------ | --------------------------------------------------------------------------- |
-| `qchReader.folders`                           | `[]`                           | Folders or `.qch` files to load (`~`, `${userHome}`, `${workspaceFolder}`). |
-| `qchReader.recursive`                         | `true`                         | Scan subfolders.                                                            |
-| `qchReader.includeWorkspaceFiles`             | `true`                         | Also load `.qch` files found in the workspace.                              |
-| `qchReader.appearance`                        | `themed`                       | `themed` or `original` page style.                                          |
-| `qchReader.openPagesIn`                       | `active`                       | Open the viewer in the active editor group or beside it.                    |
-| `qchReader.fullTextSearch.enabled`            | `true`                         | Build full-text indexes.                                                    |
-| `qchReader.fullTextSearch.indexOnStartup`     | `true`                         | Index in the background right after loading.                                |
-| `qchReader.search.maxResults`                 | `300`                          | Maximum results per search.                                                 |
-| `qchReader.filters`                           | `[]`                           | Your filters: `{ "name", "components", "versions", "attributes" }`.         |
-| `qchReader.hover.enabled` / `hover.languages` | `true` / `cpp, c, qml, python` | Documentation hovers.                                                       |
-| `qchReader.documentLinks.enabled`             | `true`                         | Clickable `qthelp://` links.                                                |
+| Setting                                       | Default                        | Description                                                                                  |
+| --------------------------------------------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| `qchReader.folders`                           | `[]`                           | Folders or `.qch` files to load; user, workspace and folder values are combined (see above). |
+| `qchReader.recursive`                         | `true`                         | Scan subfolders.                                                                             |
+| `qchReader.includeWorkspaceFiles`             | `true`                         | Also load `.qch` files found in the workspace.                                               |
+| `qchReader.appearance`                        | `themed`                       | `themed` or `original` page style.                                                           |
+| `qchReader.openPagesIn`                       | `active`                       | Open the viewer in the active editor group or beside it.                                     |
+| `qchReader.fullTextSearch.enabled`            | `true`                         | Build full-text indexes.                                                                     |
+| `qchReader.fullTextSearch.indexOnStartup`     | `true`                         | Index in the background right after loading.                                                 |
+| `qchReader.search.maxResults`                 | `300`                          | Maximum results per search.                                                                  |
+| `qchReader.filters`                           | `[]`                           | Your filters: `{ "name", "components", "versions", "attributes" }`.                          |
+| `qchReader.hover.enabled` / `hover.languages` | `true` / `cpp, c, qml, python` | Documentation hovers.                                                                        |
+| `qchReader.documentLinks.enabled`             | `true`                         | Clickable `qthelp://` links.                                                                 |
 
 ## How it works
 
