@@ -1,0 +1,524 @@
+/*
+ * "Themed" appearance: a clean reading style that follows the VS Code color theme.
+ * Applied inside the page shadow root instead of the document's own stylesheets.
+ * Covers generic HTML plus the markup produced by Qt's QDoc and by Doxygen.
+ */
+
+.qch-html {
+  --qch-border: var(--vscode-panel-border, rgba(128, 128, 128, 0.35));
+  --qch-subtle: var(--vscode-textCodeBlock-background, rgba(128, 128, 128, 0.12));
+  --qch-muted: var(--vscode-descriptionForeground, #888);
+  color: var(--vscode-editor-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: 14px;
+  line-height: 1.6;
+  overflow-wrap: break-word;
+}
+
+.qch-body {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px 32px 64px;
+}
+
+/* Typography -------------------------------------------------------------------------------- */
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 1.6em 0 0.6em;
+  color: var(--vscode-foreground);
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+h1,
+h2 {
+  /* Keep underlines clear of the floating Qt "Contents" box. */
+  display: flow-root;
+}
+
+h1 {
+  margin-top: 0.5em;
+  padding-bottom: 0.3em;
+  font-size: 2em;
+  border-bottom: 1px solid var(--qch-border);
+}
+
+h2 {
+  padding-bottom: 0.25em;
+  font-size: 1.5em;
+  border-bottom: 1px solid var(--qch-border);
+}
+
+h3 {
+  font-size: 1.2em;
+}
+
+h4 {
+  font-size: 1.05em;
+}
+
+p,
+ul,
+ol,
+dl,
+table,
+pre,
+blockquote {
+  margin: 0 0 1em;
+}
+
+ul,
+ol {
+  padding-left: 2em;
+}
+
+li + li {
+  margin-top: 0.2em;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin: 0 0 0.6em 1.6em;
+}
+
+a {
+  color: var(--vscode-textLink-foreground);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--vscode-textLink-activeForeground, var(--vscode-textLink-foreground));
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: 1px;
+}
+
+hr {
+  height: 0;
+  margin: 1.5em 0;
+  border: none;
+  border-top: 1px solid var(--qch-border);
+}
+
+blockquote {
+  padding: 0.5em 1em;
+  background: var(--vscode-textBlockQuote-background, var(--qch-subtle));
+  border-left: 4px solid var(--vscode-textBlockQuote-border, var(--qch-border));
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+:host-context(body.vscode-dark) img,
+:host-context(body.vscode-high-contrast) img {
+  /* Most diagrams are drawn for a white background. */
+  background-color: rgba(255, 255, 255, 0.94);
+  border-radius: 3px;
+}
+
+kbd {
+  padding: 0.1em 0.4em;
+  border: 1px solid var(--qch-border);
+  border-bottom-width: 2px;
+  border-radius: 3px;
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.85em;
+}
+
+mark {
+  background: var(--vscode-editor-findMatchHighlightBackground);
+  color: inherit;
+}
+
+/* Code -------------------------------------------------------------------------------------- */
+
+code,
+tt,
+samp {
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  background: var(--qch-subtle);
+  color: var(--vscode-textPreformat-foreground, inherit);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.92em;
+}
+
+pre,
+div.fragment {
+  padding: 12px 16px;
+  overflow-x: auto;
+  border: 1px solid var(--vscode-widget-border, transparent);
+  border-radius: 6px;
+  background: var(--qch-subtle);
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size, 0.9em);
+  line-height: 1.5;
+  tab-size: 4;
+}
+
+pre code,
+pre tt,
+div.fragment code {
+  padding: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+}
+
+div.fragment div.line {
+  white-space: pre-wrap;
+}
+
+/* Syntax colors used by QDoc and Doxygen. */
+pre .keyword,
+.fragment .keyword,
+.fragment .keywordtype,
+.fragment .keywordflow {
+  color: var(--vscode-symbolIcon-keywordForeground, #569cd6);
+}
+
+pre .type,
+pre .type a,
+pre .name {
+  color: var(--vscode-symbolIcon-classForeground, #4ec9b0);
+}
+
+pre .string,
+pre .char,
+.fragment .stringliteral,
+.fragment .charliteral {
+  color: var(--vscode-debugTokenExpression-string, #ce9178);
+}
+
+pre .comment,
+.fragment .comment {
+  color: var(--qch-muted);
+  font-style: italic;
+}
+
+pre .number,
+.fragment .number {
+  color: var(--vscode-debugTokenExpression-number, #b5cea8);
+}
+
+pre .preprocessor,
+.fragment .preprocessor {
+  color: var(--vscode-symbolIcon-constantForeground, #c586c0);
+}
+
+pre .operator {
+  opacity: 0.85;
+}
+
+pre .func,
+pre .js-func {
+  color: var(--vscode-symbolIcon-functionForeground, #dcdcaa);
+}
+
+/* Tables ------------------------------------------------------------------------------------ */
+
+table {
+  max-width: 100%;
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th,
+td {
+  padding: 6px 10px;
+  border: 1px solid var(--qch-border);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--vscode-keybindingTable-headerBackground, var(--qch-subtle));
+  font-weight: 600;
+}
+
+tr:nth-child(even) > td {
+  background: var(--vscode-keybindingTable-rowsBackground, rgba(128, 128, 128, 0.04));
+}
+
+div.table {
+  overflow-x: auto;
+  margin-bottom: 1em;
+}
+
+div.table > table {
+  margin-bottom: 0;
+}
+
+/* Qt documentation (QDoc) ------------------------------------------------------------------- */
+
+.header .main,
+.header .main-rounded,
+.content,
+.line,
+.mainContent {
+  display: block;
+}
+
+.navigationbar ul {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  margin: 0 0 1.2em;
+  padding: 0 0 0.6em;
+  border-bottom: 1px solid var(--qch-border);
+  color: var(--qch-muted);
+  font-size: 0.9em;
+  list-style: none;
+}
+
+.navigationbar li {
+  margin: 0;
+}
+
+.navigationbar li + li::before {
+  content: '\203A';
+  margin: 0 0.5em;
+  opacity: 0.6;
+}
+
+.navigationbar li#buildversion {
+  margin-left: auto;
+  font-size: 0.9em;
+}
+
+.navigationbar li#buildversion::before {
+  content: none;
+}
+
+.sidebar {
+  float: right;
+  width: 260px;
+  margin: 0 0 1em 1.5em;
+  padding: 0.6em 1em;
+  border: 1px solid var(--vscode-widget-border, var(--qch-border));
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, var(--qch-subtle));
+  font-size: 0.9em;
+}
+
+.sidebar:not(:has(li)) {
+  display: none;
+}
+
+.sidebar h3 {
+  margin: 0.2em 0 0.4em;
+  color: var(--qch-muted);
+  font-size: 0.8em;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.sidebar ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sidebar li {
+  margin: 0;
+  padding: 0.1em 0;
+}
+
+.sidebar li.level2 {
+  padding-left: 1em;
+}
+
+.sidebar li.level3 {
+  padding-left: 2em;
+}
+
+@media (max-width: 760px) {
+  .sidebar {
+    float: none;
+    width: auto;
+    margin: 0 0 1em;
+  }
+}
+
+h1.title {
+  margin-top: 0.2em;
+}
+
+h2.title {
+  border: none;
+  margin-top: -0.3em;
+  color: var(--qch-muted);
+  font-size: 1.1em;
+  font-weight: normal;
+}
+
+h3.fn,
+h3.flags,
+.fngroup h3,
+td.memItemLeft,
+td.memItemRight,
+td.memItemLeft *,
+td.memItemRight * {
+  font-family: var(--vscode-editor-font-family);
+}
+
+h3.fn,
+h3.flags,
+.fngroup h3 {
+  margin-top: 2em;
+  padding: 0.55em 0.9em;
+  border-left: 3px solid var(--vscode-textLink-foreground);
+  border-radius: 4px;
+  background: var(--qch-subtle);
+  font-size: 0.95em;
+  font-weight: normal;
+  line-height: 1.5;
+}
+
+h3.fn .name,
+.fngroup .name {
+  font-weight: 700;
+}
+
+h3.fn .type,
+h3.fn .type a {
+  color: var(--vscode-symbolIcon-classForeground, inherit);
+}
+
+table.alignedsummary,
+table.propsummary,
+table.memberdecls,
+table.memname,
+table.alignedsummary td,
+table.propsummary td,
+table.memberdecls td,
+table.memname td {
+  border: none;
+  background: none !important;
+}
+
+table.alignedsummary td,
+table.propsummary td {
+  padding: 2px 8px;
+}
+
+td.memItemLeft {
+  text-align: right;
+  white-space: nowrap;
+  color: var(--qch-muted);
+}
+
+table.annotated td,
+table.valuelist td,
+table.generic td {
+  padding: 4px 10px;
+}
+
+table.annotated td.tblName {
+  white-space: nowrap;
+}
+
+table.valuelist .topAlign,
+table.annotated .topAlign {
+  vertical-align: top;
+}
+
+.rightAlign {
+  text-align: right;
+}
+
+.centerAlign {
+  text-align: center;
+}
+
+p.centerAlign img,
+.centerAlign img {
+  display: inline-block;
+}
+
+.footer {
+  clear: both;
+  margin-top: 3em;
+  padding-top: 1em;
+  border-top: 1px solid var(--qch-border);
+  color: var(--qch-muted);
+  font-size: 0.8em;
+}
+
+.footer acronym {
+  text-decoration: none;
+}
+
+/* Doxygen ----------------------------------------------------------------------------------- */
+
+div.header .title,
+div.title {
+  font-size: 1.8em;
+  font-weight: 600;
+}
+
+div.headertitle {
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid var(--qch-border);
+  margin-bottom: 1em;
+}
+
+.memitem {
+  margin: 1em 0 1.5em;
+  overflow: hidden;
+  border: 1px solid var(--qch-border);
+  border-radius: 6px;
+}
+
+.memproto {
+  padding: 6px 12px;
+  background: var(--qch-subtle);
+  font-family: var(--vscode-editor-font-family);
+}
+
+.memdoc {
+  padding: 8px 14px;
+}
+
+.memname td {
+  padding: 0 2px;
+}
+
+h2.groupheader {
+  margin-top: 1.8em;
+}
+
+.memSeparator td {
+  height: 4px;
+  padding: 0;
+  border: none;
+}
+
+/* Generated pages --------------------------------------------------------------------------- */
+
+.qch-info table.qch-props th {
+  width: 200px;
+  white-space: nowrap;
+}
+
+.qch-info table.qch-props code {
+  word-break: break-all;
+}
+
+.qch-media {
+  padding: 2em 0;
+  text-align: center;
+}

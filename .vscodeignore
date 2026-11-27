@@ -1,0 +1,11 @@
+**
+!dist/**
+dist/**/*.map
+!media/activity.svg
+!media/book-dark.svg
+!media/book-light.svg
+!media/icon.png
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE

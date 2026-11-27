@@ -1,0 +1,394 @@
+body {
+  margin: 0;
+  padding: 0;
+  color: var(--vscode-foreground);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  background: transparent;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 8px 12px 6px;
+  background: var(--vscode-sideBar-background);
+}
+
+/* Query input ------------------------------------------------------------------------------- */
+
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 26px;
+  padding: 0 2px 0 6px;
+  border: 1px solid var(--vscode-input-border, transparent);
+  border-radius: 4px;
+  background: var(--vscode-input-background);
+  color: var(--vscode-input-foreground);
+}
+
+.input-row:focus-within {
+  border-color: var(--vscode-focusBorder);
+}
+
+.input-row > .codicon {
+  flex: none;
+  opacity: 0.7;
+}
+
+.query {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0 4px;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.query::placeholder {
+  color: var(--vscode-input-placeholderForeground);
+}
+
+.icon-button {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vscode-icon-foreground, inherit);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+}
+
+.icon-button:focus-visible,
+.tab:focus-visible,
+.filter-chip:focus-visible,
+.scope:focus-visible,
+.more:focus-visible,
+.button:focus-visible,
+.link-button:focus-visible {
+  outline: 1px solid var(--vscode-focusBorder);
+  outline-offset: -1px;
+}
+
+.icon-button[aria-expanded='true'] {
+  background: var(--vscode-inputOption-activeBackground);
+  color: var(--vscode-inputOption-activeForeground, inherit);
+}
+
+/* Mode tabs --------------------------------------------------------------------------------- */
+
+.tabs {
+  display: flex;
+  gap: 2px;
+  margin-top: 8px;
+  padding: 2px;
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.1));
+}
+
+.tab {
+  flex: 1;
+  height: 22px;
+  padding: 0 8px;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+}
+
+.tab:hover {
+  color: var(--vscode-foreground);
+}
+
+.tab[aria-selected='true'] {
+  background: var(
+    --vscode-button-secondaryBackground,
+    var(--vscode-list-activeSelectionBackground)
+  );
+  color: var(--vscode-button-secondaryForeground, var(--vscode-foreground));
+  box-shadow: 0 1px 2px var(--vscode-widget-shadow, transparent);
+}
+
+/* Options ----------------------------------------------------------------------------------- */
+
+.options-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.scope {
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  padding: 0 4px;
+  border: 1px solid var(--vscode-dropdown-border, transparent);
+  border-radius: 4px;
+  background: var(--vscode-dropdown-background);
+  color: var(--vscode-dropdown-foreground);
+  font: inherit;
+}
+
+.filter-chip {
+  display: inline-flex;
+  flex: 0 1 auto;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  max-width: 50%;
+  height: 24px;
+  padding: 0 8px;
+  border: 1px solid var(--vscode-button-border, var(--vscode-dropdown-border, transparent));
+  border-radius: 12px;
+  background: transparent;
+  color: var(--vscode-descriptionForeground);
+  cursor: pointer;
+}
+
+.filter-chip span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.filter-chip:hover {
+  background: var(--vscode-toolbar-hoverBackground);
+  color: var(--vscode-foreground);
+}
+
+.filter-chip.active {
+  border-color: transparent;
+  background: var(--vscode-badge-background);
+  color: var(--vscode-badge-foreground);
+}
+
+/* Help and status --------------------------------------------------------------------------- */
+
+.help {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--vscode-widget-border, transparent);
+  border-radius: 6px;
+  background: var(--vscode-editorWidget-background);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.help p {
+  margin: 0 0 4px;
+}
+
+.help table {
+  width: 100%;
+  margin-bottom: 6px;
+  border-collapse: collapse;
+}
+
+.help td {
+  padding: 1px 4px 1px 0;
+  vertical-align: top;
+}
+
+.help td:first-child {
+  white-space: nowrap;
+}
+
+code {
+  padding: 0 3px;
+  border-radius: 3px;
+  background: var(--vscode-textCodeBlock-background);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 0.95em;
+}
+
+.index-status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 8px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+}
+
+.index-status .bar {
+  flex: 1 1 100%;
+  height: 3px;
+  overflow: hidden;
+  border-radius: 2px;
+  background: var(--vscode-editorWidget-background, rgba(128, 128, 128, 0.2));
+}
+
+.index-status .fill {
+  height: 100%;
+  background: var(--vscode-progressBar-background);
+  transition: width 200ms;
+}
+
+.link-button {
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--vscode-textLink-foreground);
+  cursor: pointer;
+}
+
+.link-button:hover {
+  text-decoration: underline;
+}
+
+.summary {
+  padding: 2px 12px 6px;
+  color: var(--vscode-descriptionForeground);
+  font-size: 11px;
+}
+
+.summary.error {
+  color: var(--vscode-errorForeground);
+}
+
+/* Results ----------------------------------------------------------------------------------- */
+
+.results {
+  margin: 0;
+  padding: 0 0 8px;
+  list-style: none;
+  outline: none;
+}
+
+.result {
+  padding: 5px 12px 6px;
+  border-left: 2px solid transparent;
+  cursor: pointer;
+}
+
+.result:hover {
+  background: var(--vscode-list-hoverBackground);
+}
+
+.result[aria-selected='true'] {
+  background: var(--vscode-list-inactiveSelectionBackground, var(--vscode-list-hoverBackground));
+  border-left-color: var(--vscode-focusBorder);
+}
+
+.results:focus-within .result[aria-selected='true'],
+.header:focus-within ~ .results .result[aria-selected='true'] {
+  background: var(--vscode-list-activeSelectionBackground);
+  color: var(--vscode-list-activeSelectionForeground, inherit);
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+}
+
+.meta {
+  display: flex;
+  gap: 6px;
+  overflow: hidden;
+  color: var(--vscode-descriptionForeground);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.meta .subtitle {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.meta .detail {
+  flex: 0 100 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  opacity: 0.8;
+}
+
+.meta .detail::before {
+  content: '\00b7';
+  margin-right: 6px;
+}
+
+.snippet {
+  display: -webkit-box;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--vscode-foreground);
+  font-size: 12px;
+  line-height: 1.45;
+  opacity: 0.85;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+}
+
+mark {
+  border-radius: 2px;
+  background: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+  color: inherit;
+}
+
+.result[aria-selected='true'] mark {
+  outline: 1px solid var(--vscode-editor-findMatchHighlightBorder, transparent);
+}
+
+.more {
+  display: block;
+  margin: 4px auto 16px;
+  padding: 4px 14px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 4px;
+  background: var(--vscode-button-secondaryBackground);
+  color: var(--vscode-button-secondaryForeground);
+  cursor: pointer;
+}
+
+.more:hover {
+  background: var(--vscode-button-secondaryHoverBackground);
+}
+
+.empty {
+  padding: 24px 16px;
+  color: var(--vscode-descriptionForeground);
+  text-align: center;
+}
+
+.button {
+  padding: 4px 14px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 4px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: var(--vscode-button-hoverBackground);
+}

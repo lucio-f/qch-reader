@@ -1,0 +1,599 @@
+{
+  "name": "qch-reader",
+  "displayName": "QCH Documentation Reader",
+  "description": "Browse, search and filter Qt Compressed Help (.qch) documentation inside VS Code.",
+  "version": "0.1.0",
+  "publisher": "lucio-f",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lucio-f/qch-reader.git"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.100.0",
+    "node": ">=22.12.0"
+  },
+  "categories": [
+    "Other",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "qch",
+    "qt",
+    "qthelp",
+    "documentation",
+    "assistant",
+    "doxygen"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onStartupFinished",
+    "onWebviewPanel:qchReader.docView"
+  ],
+  "capabilities": {
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "Documentation files on virtual file systems are read into memory."
+    },
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Documentation folders configured in workspace settings are ignored in untrusted workspaces.",
+      "restrictedConfigurations": [
+        "qchReader.folders"
+      ]
+    }
+  },
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "qchReader",
+          "title": "QCH Documentation",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "views": {
+      "qchReader": [
+        {
+          "id": "qchReader.contents",
+          "name": "Contents",
+          "icon": "media/activity.svg"
+        },
+        {
+          "id": "qchReader.search",
+          "type": "webview",
+          "name": "Search",
+          "icon": "media/activity.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "qchReader.contents",
+        "contents": "Loading documentation…",
+        "when": "qchReader.loading"
+      },
+      {
+        "view": "qchReader.contents",
+        "contents": "No Qt Compressed Help (.qch) files were found.\n[Add Documentation Folder](command:qchReader.addFolder)\nYou can also open any .qch file from the Explorer, or list folders in the `qchReader.folders` setting.\n[Open Settings](command:workbench.action.openSettings?%5B%22qchReader%22%5D)",
+        "when": "!qchReader.loading && !qchReader.hasDocumentation"
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "qchReader.qchEditor",
+        "displayName": "QCH Documentation Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.qch"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
+    "commands": [
+      {
+        "command": "qchReader.addFolder",
+        "title": "Add Documentation Folder…",
+        "category": "QCH",
+        "icon": "$(new-folder)"
+      },
+      {
+        "command": "qchReader.removeFolder",
+        "title": "Remove Documentation Folder…",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.refresh",
+        "title": "Reload Documentation",
+        "category": "QCH",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "qchReader.selectFilter",
+        "title": "Select Filter…",
+        "category": "QCH",
+        "icon": "$(filter)"
+      },
+      {
+        "command": "qchReader.createFilter",
+        "title": "Create Filter…",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.goToKeyword",
+        "title": "Go to Keyword in Documentation…",
+        "category": "QCH",
+        "icon": "$(symbol-keyword)"
+      },
+      {
+        "command": "qchReader.search",
+        "title": "Search Documentation",
+        "category": "QCH",
+        "icon": "$(search)"
+      },
+      {
+        "command": "qchReader.lookupSymbol",
+        "title": "Look Up Symbol in Documentation",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.openUrl",
+        "title": "Open qthelp:// URL…",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.openHome",
+        "title": "Open Start Page",
+        "category": "QCH",
+        "icon": "$(home)"
+      },
+      {
+        "command": "qchReader.openToSide",
+        "title": "Open to the Side",
+        "category": "QCH",
+        "icon": "$(split-horizontal)"
+      },
+      {
+        "command": "qchReader.showDocumentInfo",
+        "title": "Show Document Information",
+        "category": "QCH",
+        "icon": "$(info)"
+      },
+      {
+        "command": "qchReader.searchInDocument",
+        "title": "Search in This Document",
+        "category": "QCH",
+        "icon": "$(search)"
+      },
+      {
+        "command": "qchReader.revealQchFile",
+        "title": "Reveal .qch File in OS",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.copyUrl",
+        "title": "Copy qthelp:// URL",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.rebuildIndex",
+        "title": "Rebuild Full-Text Search Index",
+        "category": "QCH"
+      },
+      {
+        "command": "qchReader.syncContents",
+        "title": "Reveal Current Page in Contents",
+        "category": "QCH",
+        "icon": "$(list-tree)"
+      },
+      {
+        "command": "qchReader.viewer.back",
+        "title": "Go Back",
+        "category": "QCH Viewer",
+        "icon": "$(arrow-left)"
+      },
+      {
+        "command": "qchReader.viewer.forward",
+        "title": "Go Forward",
+        "category": "QCH Viewer",
+        "icon": "$(arrow-right)"
+      },
+      {
+        "command": "qchReader.viewer.find",
+        "title": "Find in Page",
+        "category": "QCH Viewer"
+      },
+      {
+        "command": "qchReader.viewer.zoomIn",
+        "title": "Zoom In",
+        "category": "QCH Viewer"
+      },
+      {
+        "command": "qchReader.viewer.zoomOut",
+        "title": "Zoom Out",
+        "category": "QCH Viewer"
+      },
+      {
+        "command": "qchReader.viewer.zoomReset",
+        "title": "Reset Zoom",
+        "category": "QCH Viewer"
+      },
+      {
+        "command": "qchReader.viewer.toggleAppearance",
+        "title": "Toggle Themed / Original Page Style",
+        "category": "QCH Viewer"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "qchReader.selectFilter",
+          "when": "view == qchReader.contents",
+          "group": "navigation@1"
+        },
+        {
+          "command": "qchReader.goToKeyword",
+          "when": "view == qchReader.contents",
+          "group": "navigation@2"
+        },
+        {
+          "command": "qchReader.refresh",
+          "when": "view == qchReader.contents",
+          "group": "navigation@3"
+        },
+        {
+          "command": "qchReader.addFolder",
+          "when": "view == qchReader.contents",
+          "group": "1_folders@1"
+        },
+        {
+          "command": "qchReader.removeFolder",
+          "when": "view == qchReader.contents",
+          "group": "1_folders@2"
+        },
+        {
+          "command": "qchReader.createFilter",
+          "when": "view == qchReader.contents",
+          "group": "2_filters@1"
+        },
+        {
+          "command": "qchReader.rebuildIndex",
+          "when": "view == qchReader.search",
+          "group": "1_index@1"
+        },
+        {
+          "command": "qchReader.selectFilter",
+          "when": "view == qchReader.search",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "qchReader.openHome",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "inline@1"
+        },
+        {
+          "command": "qchReader.searchInDocument",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "inline@2"
+        },
+        {
+          "command": "qchReader.openHome",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "1_open@1"
+        },
+        {
+          "command": "qchReader.openToSide",
+          "when": "view == qchReader.contents",
+          "group": "1_open@2"
+        },
+        {
+          "command": "qchReader.searchInDocument",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "2_search@1"
+        },
+        {
+          "command": "qchReader.showDocumentInfo",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "3_info@1"
+        },
+        {
+          "command": "qchReader.revealQchFile",
+          "when": "view == qchReader.contents && viewItem == qchDocument",
+          "group": "3_info@2"
+        },
+        {
+          "command": "qchReader.copyUrl",
+          "when": "view == qchReader.contents",
+          "group": "4_copy@1"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "qchReader.lookupSymbol",
+          "when": "qchReader.hasDocumentation && editorTextFocus",
+          "group": "navigation@90"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "qchReader.openHome",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.openToSide",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.showDocumentInfo",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.searchInDocument",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.revealQchFile",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.copyUrl",
+          "when": "false"
+        },
+        {
+          "command": "qchReader.syncContents",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.back",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.forward",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.find",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.zoomIn",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.zoomOut",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.zoomReset",
+          "when": "qchReader.viewerActive"
+        },
+        {
+          "command": "qchReader.viewer.toggleAppearance",
+          "when": "qchReader.viewerActive"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "qchReader.lookupSymbol",
+        "key": "shift+f1",
+        "when": "editorTextFocus && qchReader.hasDocumentation"
+      },
+      {
+        "command": "qchReader.goToKeyword",
+        "key": "ctrl+alt+f1",
+        "mac": "cmd+alt+f1"
+      },
+      {
+        "command": "qchReader.viewer.back",
+        "key": "alt+left",
+        "mac": "cmd+[",
+        "when": "qchReader.viewerFocused"
+      },
+      {
+        "command": "qchReader.viewer.forward",
+        "key": "alt+right",
+        "mac": "cmd+]",
+        "when": "qchReader.viewerFocused"
+      },
+      {
+        "command": "qchReader.viewer.find",
+        "key": "ctrl+f",
+        "mac": "cmd+f",
+        "when": "qchReader.viewerFocused"
+      },
+      {
+        "command": "qchReader.viewer.zoomIn",
+        "key": "ctrl+=",
+        "mac": "cmd+=",
+        "when": "qchReader.viewerFocused"
+      },
+      {
+        "command": "qchReader.viewer.zoomOut",
+        "key": "ctrl+-",
+        "mac": "cmd+-",
+        "when": "qchReader.viewerFocused"
+      },
+      {
+        "command": "qchReader.viewer.zoomReset",
+        "key": "ctrl+0",
+        "mac": "cmd+0",
+        "when": "qchReader.viewerFocused"
+      }
+    ],
+    "configuration": {
+      "title": "QCH Documentation Reader",
+      "properties": {
+        "qchReader.folders": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [],
+          "markdownDescription": "Folders (or individual `.qch` files) containing Qt Compressed Help documentation. Supports `~`, `${userHome}` and `${workspaceFolder}`.",
+          "scope": "machine-overridable",
+          "order": 1
+        },
+        "qchReader.recursive": {
+          "type": "boolean",
+          "default": true,
+          "description": "Look for .qch files in subfolders of the configured folders.",
+          "order": 2
+        },
+        "qchReader.includeWorkspaceFiles": {
+          "type": "boolean",
+          "default": true,
+          "description": "Also load .qch files found inside the open workspace folders.",
+          "order": 3
+        },
+        "qchReader.appearance": {
+          "type": "string",
+          "enum": [
+            "themed",
+            "original"
+          ],
+          "enumDescriptions": [
+            "Render pages with a clean stylesheet that follows the current VS Code color theme.",
+            "Render pages with the stylesheets shipped inside the .qch file."
+          ],
+          "default": "themed",
+          "description": "How documentation pages are styled.",
+          "order": 10
+        },
+        "qchReader.openPagesIn": {
+          "type": "string",
+          "enum": [
+            "active",
+            "beside"
+          ],
+          "enumDescriptions": [
+            "Open pages in the active editor group.",
+            "Open pages in the editor group beside the active one."
+          ],
+          "default": "active",
+          "description": "Where the documentation viewer opens when it is not already visible.",
+          "order": 11
+        },
+        "qchReader.fullTextSearch.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Build a full-text search index for the loaded documentation.",
+          "order": 20
+        },
+        "qchReader.fullTextSearch.indexOnStartup": {
+          "type": "boolean",
+          "default": true,
+          "description": "Build missing full-text indexes in the background as soon as documentation is loaded. When disabled, indexes are built on the first full-text search.",
+          "order": 21
+        },
+        "qchReader.search.maxResults": {
+          "type": "integer",
+          "default": 300,
+          "minimum": 20,
+          "maximum": 5000,
+          "description": "Maximum number of results returned by a search.",
+          "order": 22
+        },
+        "qchReader.filters": {
+          "type": "array",
+          "default": [],
+          "markdownDescription": "Your own documentation filters. Each filter restricts the visible documentation by component (the virtual folder of a `.qch`, e.g. `qtcore`), version and/or legacy filter attributes.",
+          "items": {
+            "type": "object",
+            "required": [
+              "name"
+            ],
+            "additionalProperties": false,
+            "properties": {
+              "name": {
+                "type": "string",
+                "description": "Name shown in the filter picker."
+              },
+              "components": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Components (virtual folders) to include. Empty means all."
+              },
+              "versions": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Versions to include. Empty means all."
+              },
+              "attributes": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                },
+                "description": "Legacy filter attributes that every visible item must have."
+              }
+            }
+          },
+          "order": 30
+        },
+        "qchReader.hover.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show documentation summaries when hovering over symbols that exist in the keyword index.",
+          "order": 40
+        },
+        "qchReader.hover.languages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": [
+            "cpp",
+            "c",
+            "qml",
+            "python"
+          ],
+          "description": "Language identifiers for which documentation hovers are provided.",
+          "order": 41
+        },
+        "qchReader.documentLinks.enabled": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "Make `qthelp://` URLs in text documents clickable.",
+          "order": 42
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "watch": "node scripts/build.mjs --watch",
+    "vscode:prepublish": "node scripts/build.mjs --production",
+    "typecheck": "tsc -p . --noEmit && tsc -p src/webview --noEmit",
+    "lint": "eslint --max-warnings 0 .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run test",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.7",
+    "@types/vscode": "~1.100.0",
+    "@vscode/codicons": "^0.0.46-24",
+    "@vscode/vsce": "^4.1.1",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.15.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.10.1",
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.74.0",
+    "vitest": "^5.1.2"
+  }
+}

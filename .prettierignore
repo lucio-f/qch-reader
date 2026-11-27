@@ -1,0 +1,6 @@
+dist/
+node_modules/
+coverage/
+*.vsix
+test/fixtures/**/*.qch
+test/fixtures/source/**/*.html

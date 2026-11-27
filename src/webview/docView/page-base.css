@@ -1,0 +1,116 @@
+/* Rules applied inside the page shadow root in every appearance. */
+
+:host {
+  display: block;
+}
+
+* {
+  scroll-margin-top: calc(var(--toolbar-height, 36px) + 12px);
+}
+
+::highlight(qch-search) {
+  background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+}
+
+::highlight(qch-find) {
+  background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+}
+
+::highlight(qch-find-current) {
+  background-color: var(--vscode-editor-findMatchBackground, rgba(255, 150, 50, 0.7));
+}
+
+.qch-target-flash {
+  animation: qch-flash 1.8s ease-out;
+}
+
+@keyframes qch-flash {
+  0%,
+  30% {
+    background-color: var(--vscode-editor-findMatchHighlightBackground, rgba(234, 92, 0, 0.33));
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+img[data-qch-missing] {
+  display: inline-block;
+  min-width: 24px;
+  min-height: 16px;
+  outline: 1px dashed var(--vscode-editorWarning-foreground, #cca700);
+}
+
+/* "Original" appearance: the document's own stylesheet on a paper-like page. */
+:host(.original) .qch-html {
+  /* Containing block for absolutely positioned page elements (e.g. Qt's .title). */
+  position: relative;
+  overflow: auto;
+  min-height: calc(100vh - var(--toolbar-height, 36px));
+  background: #fff;
+  color: #000;
+}
+
+:host(.original) .qch-body {
+  padding: 8px 16px 32px;
+}
+
+/* Not-found page (shared by both appearances). */
+.qch-notfound {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 12vh 24px 48px !important;
+  text-align: center;
+  font-family: var(--vscode-font-family);
+  color: var(--vscode-descriptionForeground);
+}
+
+:host(.original) .qch-notfound {
+  color: #555;
+}
+
+.qch-notfound h1 {
+  border: none !important;
+  color: var(--vscode-foreground);
+  font-size: 1.6em;
+}
+
+.qch-notfound code {
+  word-break: break-all;
+}
+
+.qch-notfound-icon .codicon {
+  font-size: 48px !important;
+  opacity: 0.5;
+}
+
+.qch-notfound .button {
+  margin-top: 12px;
+  padding: 4px 14px;
+  border: 1px solid var(--vscode-button-border, transparent);
+  border-radius: 3px;
+  background: var(--vscode-button-background);
+  color: var(--vscode-button-foreground);
+  cursor: pointer;
+}
+
+.qch-notfound .button:hover {
+  background: var(--vscode-button-hoverBackground);
+}
+
+.qch-notfound .button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+/* Codicon rules are not inherited by the shadow root; declare the few used here. */
+.codicon[class*='codicon-'] {
+  display: inline-block;
+  font: normal normal normal 16px/1 codicon;
+  text-align: center;
+  user-select: none;
+}
+
+.codicon-book::before {
+  content: '\eaa4';
+}
